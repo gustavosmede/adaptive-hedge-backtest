@@ -1,26 +1,26 @@
 # BTCUSDT Adaptive Hedge Backtest (Paper-Inspired)
 
-Projeto Python para backtestar uma estratégia de exposição/hedge adaptativo inspirada no artigo **Application of Deep Reinforcement Learning to At-the-Money S&P 500 Options Hedging**, adaptada para **BTCUSDT**.
+Python project to backtest an adaptive exposure/hedge strategy inspired by the paper **Application of Deep Reinforcement Learning to At-the-Money S&P 500 Options Hedging**, adapted for **BTCUSDT**.
 
-Este repositório é **educacional e de pesquisa**. Ele não é aconselhamento financeiro, não representa estratégia pronta para produção e não deve ser usado como base única para decisões de investimento.
+This repository is **educational and for research**. It is not financial advice, does not represent a production-ready strategy, and should not be used as the sole basis for investment decisions.
 
-A implementação prioriza robustez, interpretabilidade e reprodutibilidade com:
-- camada de dados Binance com cache e paginação
-- features de mercado sem lookahead
-- benchmarks (`buy_and_hold`, `buy_and_hold_50pct` e rule-based dinâmico)
-- benchmark adicional `buy_and_hold_50pct` para comparação contra alocação parcial estática
-- estratégia principal adaptativa determinística (paper-inspired)
-- walk-forward out-of-sample
-- métricas e gráficos de performance
+The implementation prioritizes robustness, interpretability, and reproducibility with:
+- Binance data layer with caching and pagination
+- Market features without lookahead
+- Benchmarks (`buy_and_hold`, `buy_and_hold_50pct`, and dynamic rule-based)
+- Additional `buy_and_hold_50pct` benchmark for comparison against static partial allocation
+- Deterministic adaptive main strategy (paper-inspired)
+- Walk-forward out-of-sample
+- Performance metrics and charts
 
-## Status Atual
+## Current Status
 
-O projeto já produz backtests funcionais e comparações úteis entre alocações estáticas e uma política adaptativa. Os experimentos atuais mostram que:
-- controle de turnover é decisivo para viabilidade
-- a estratégia adaptativa ainda não supera de forma robusta benchmarks passivos simples
-- o código é útil para estudo, extensão e experimentação quantitativa
+The project already produces functional backtests and useful comparisons between static allocations and an adaptive policy. Current experiments show that:
+- Turnover control is decisive for viability
+- The adaptive strategy does not yet robustly outperform simple passive benchmarks
+- The code is useful for study, extension, and quantitative experimentation
 
-## 1) Estrutura do Projeto
+## 1) Project Structure
 
 ```text
 project/
@@ -59,10 +59,10 @@ project/
 
 ## 2) Setup
 
-### Requisitos
+### Requirements
 - Python 3.11+
 
-### Instalação
+### Installation
 
 ```bash
 cd project
@@ -71,15 +71,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Crie pastas vazias locais se quiser manter a estrutura explícita:
+Create empty local folders if you want to maintain the explicit structure:
 
 ```bash
 mkdir -p data outputs
 ```
 
-## 3) Execução padrão
+## 3) Default Execution
 
-Configuração default (igual ao pedido):
+Default configuration (as requested):
 - `symbol=BTCUSDT`
 - `market=spot`
 - `interval=15m`
@@ -93,13 +93,13 @@ Configuração default (igual ao pedido):
 - `rebalance_every_n_bars=4`
 - `max_position_step=0.25`
 
-Rodar:
+Run:
 
 ```bash
 python main.py
 ```
 
-## 4) Exemplo com parâmetros explícitos
+## 4) Example with explicit parameters
 
 ```bash
 python main.py \
@@ -121,98 +121,98 @@ python main.py \
   --run-name btc_wf_default
 ```
 
-## 5) O que o pipeline faz
+## 5) What the pipeline does
 
-1. Baixa klines da Binance (`spot` ou `futures`) com paginação e rate-limit.
-2. Usa cache local em `data/` (parquet/csv) para evitar re-download.
-3. Prepara/valida OHLCV.
-4. Cria features:
-   - retornos 1/3/6/12/24
-   - vol realizada curta/longa
+1. Downloads klines from Binance (`spot` or `futures`) with pagination and rate-limiting.
+2. Uses local cache in `data/` (parquet/csv) to avoid re-downloading.
+3. Prepares/validates OHLCV.
+4. Creates features:
+   - 1/3/6/12/24 returns
+   - short/long realized vol
    - rolling sharpe
-   - média curta/longa e distância
-   - z-score do preço
+   - short/long average and distance
+   - price z-score
    - momentum
-   - ATR percentual
+   - percentage ATR
    - volume z-score
-   - regime de tendência
-   - drawdown de preço
-5. Executa backtest com:
-   - posição aplicada na barra seguinte (sem lookahead)
-   - custo + slippage por mudança de posição
-   - equity curve, turnover, custo acumulado, log de trades
-6. Avalia walk-forward e concatena resultados OOS.
-7. Salva relatórios e gráficos em `outputs/<run_name>/`.
+   - trend regime
+   - price drawdown
+5. Executes backtest with:
+   - position applied on the next bar (no lookahead)
+   - cost + slippage per position change
+   - equity curve, turnover, cumulative cost, trade log
+6. Evaluates walk-forward and concatenates OOS results.
+7. Saves reports and charts in `outputs/<run_name>/`.
 
-## 6) Resultados e interpretação
+## 6) Results and interpretation
 
-Os resultados dependem fortemente de:
-- timeframe escolhido
-- custo de transação e slippage
-- regras de rebalanceamento
-- janela de treino e teste do walk-forward
+Results depend heavily on:
+- chosen timeframe
+- transaction cost and slippage
+- rebalancing rules
+- walk-forward training and testing windows
 
-Benchmarks simples como `buy_and_hold` e `buy_and_hold_50pct` são mantidos no projeto justamente para evitar conclusões enganosas sobre ganho de timing.
+Simple benchmarks like `buy_and_hold` and `buy_and_hold_50pct` are kept in the project specifically to avoid misleading conclusions about timing gains.
 
-## 7) Estratégias
+## 7) Strategies
 
-- `buy_and_hold`: benchmark 100% exposto.
-- `buy_and_hold_50pct`: benchmark estático com 50% de exposição.
-- `rule_based_dynamic`: baseline com regras de tendência/volatilidade/drawdown.
-- `adaptive_hedge`: estratégia principal inspirada no paper.
+- `buy_and_hold`: 100% exposed benchmark.
+- `buy_and_hold_50pct`: static benchmark with 50% exposure.
+- `rule_based_dynamic`: baseline with trend/volatility/drawdown rules.
+- `adaptive_hedge`: main strategy inspired by the paper.
 
-### Como a lógica adaptativa replica a ideia central do paper
+### How the adaptive logic replicates the paper's core idea
 
-A estratégia trata hedge/exposição como decisão sequencial: em cada barra ela escolhe um nível de exposição discreto (ex.: `-1, -0.5, 0, 0.5, 1`) maximizando retorno ajustado por risco e custo de transação. O score combina:
-- sinal de tendência/momentum
-- componente de reversão à média
-- penalização por risco (volatilidade e drawdown)
-- penalização por churn/custo de troca de posição
+The strategy treats hedge/exposure as a sequential decision: at each bar, it chooses a discrete exposure level (e.g., `-1, -0.5, 0, 0.5, 1`) maximizing risk-adjusted return and transaction cost. The score combines:
+- trend/momentum signal
+- mean reversion component
+- risk penalty (volatility and drawdown)
+- churn/position change cost penalty
 
-Não é DRL nesta versão, mas mantém a estrutura de controle dinâmico de hedge com função objetivo por etapa e fricções de mercado.
+It is not DRL in this version, but it maintains the dynamic hedge control structure with a per-step objective function and market frictions.
 
-## 8) Evitando erros clássicos
+## 8) Avoiding classic errors
 
-- Sem lookahead: decisão em `t`, execução em `t+1`.
-- Sem leakage: features só usam janelas passadas.
-- Normalização temporal correta: parâmetros de normalização da estratégia adaptativa são ajustados somente na janela de treino de cada fold.
-- Walk-forward: treino -> teste subsequente -> avanço temporal.
+- No lookahead: decision at `t`, execution at `t+1`.
+- No leakage: features only use past windows.
+- Correct temporal normalization: normalization parameters for the adaptive strategy are fitted only on the training window of each fold.
+- Walk-forward: train -> subsequent test -> temporal advance.
 
-## 9) Saídas geradas
+## 9) Generated outputs
 
-Em `outputs/<run_name>/`:
+In `outputs/<run_name>/`:
 - `price.png`
 - `equity_comparison.png`
 - `drawdown_comparison.png`
 - `metrics_summary.csv`
-- `<strategy>_bars.csv` (por barra)
+- `<strategy>_bars.csv` (per bar)
 - `<strategy>_trades.csv` (rebalance/trades)
 
-Também há resumo final no terminal com tabela de métricas:
-- PnL bruto/líquido
+There is also a final summary in the terminal with a metrics table:
+- Gross/net PnL
 - Sharpe, Sortino, Calmar
 - CAGR
 - Max Drawdown
 - Turnover
-- Exposição média
-- Custo total
+- Average exposure
+- Total cost
 - Win rate
 
-## 10) Ajustes rápidos
+## 10) Quick adjustments
 
-- Parâmetros globais default: `config.py`
-- Overrides por execução: argumentos CLI em `main.py`
-- Regras da estratégia adaptativa: `src/strategies/adaptive.py`
-- Regras baseline: `src/strategies/baseline.py`
+- Default global parameters: `config.py`
+- Per-execution overrides: CLI arguments in `main.py`
+- Adaptive strategy rules: `src/strategies/adaptive.py`
+- Baseline rules: `src/strategies/baseline.py`
 
-## 11) Limitações
+## 11) Limitations
 
-- Estratégia ainda experimental, sem evidência robusta de superioridade fora da amostra contra benchmarks passivos simples.
-- Backtest não inclui latência real, filas de execução, impacto de mercado ou custos variáveis.
-- A adaptação do paper para BTCUSDT é conceitual; não é reprodução fiel do artigo original.
-- O processo de calibração atual é determinístico e relativamente simples.
+- Strategy is still experimental, without robust evidence of out-of-sample superiority against simple passive benchmarks.
+- Backtest does not include real latency, execution queues, market impact, or variable costs.
+- The adaptation of the paper for BTCUSDT is conceptual; it is not a faithful reproduction of the original article.
+- The current calibration process is deterministic and relatively simple.
 
-## 12) Observações
+## 12) Observations
 
-- Dados Binance podem ter gaps eventuais em períodos longos; o validador alerta inconsistências de frequência.
-- Para backtest mais rígido, você pode calibrar tamanho de janelas e custos no CLI.
+- Binance data may have occasional gaps over long periods; the validator warns of frequency inconsistencies.
+- For a stricter backtest, you can calibrate window sizes and costs in the CLI.
